@@ -34,7 +34,10 @@ export default async function handler(req, res) {
       },
     }));
 
-    return res.status(200).json(partidos);
+    return res.status(200).json({
+  matches: partidos
+});
+
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "No se pudieron obtener los partidos" });
