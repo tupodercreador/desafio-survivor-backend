@@ -1,9 +1,15 @@
 export default async function handler(req, res) {
-  const { jornada } = req.query;
+  // 🔓 CORS
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  if (!jornada) {
-    return res.status(400).json({ error: "Falta el parámetro jornada" });
+  // Preflight
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
   }
+
+  const jornada = req.query.jornada || 22;
 
   try {
     const response = await fetch(
@@ -15,13 +21,9 @@ export default async function handler(req, res) {
       }
     );
 
-    if (!response.ok) {
-      throw new Error("Error al obtener partidos de Football-Data");
-    }
-
     const data = await response.json();
 
-    const partidos = data.matches.map(match => ({
+    const matches = data.matches.map(match => ({
       matchId: match.id,
       homeTeamId: match.homeTeam.id,
       awayTeamId: match.awayTeam.id,
@@ -34,12 +36,8 @@ export default async function handler(req, res) {
       },
     }));
 
-    return res.status(200).json({
-  matches: partidos
-});
-
+    res.status(200).json({ matches });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: "No se pudieron obtener los partidos" });
+    res.status(500).json({ error: "Error al obtener partidos" });
   }
 }
